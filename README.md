@@ -1,5 +1,7 @@
 Exportação de Layout da Day
 
+https://pedroandradeoriginal.github.io/layoutdoplano/
+
 Aplicação web local para transformar uma planilha de efetivo no layout de inclusão de beneficiários do plano de saúde e odontológico.
 
 O processamento acontece integralmente no navegador. Nenhuma planilha ou informação pessoal é enviada, armazenada ou compartilhada.
