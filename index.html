@@ -8,13 +8,16 @@
       content="Gere o layout de admissões do plano de saúde com processamento totalmente local."
     />
     <meta name="theme-color" content="#7b204f" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link
       rel="icon"
       type="image/svg+xml"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237b204f'/%3E%3Cpath d='M17 16v32M17 32h20M37 16v32' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M48 35v18M39 44h18' stroke='%23e6b85c' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"
     />
     <title>Exportação de Layout da Day</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260919-5" />
   </head>
   <body>
     <header class="topbar">
@@ -33,11 +36,11 @@
       <section class="workspace" aria-label="Gerador de layout">
         <div class="mode-selector" aria-label="Tipo de exportação">
           <button class="mode-button is-active" id="mode-plan" type="button" aria-pressed="true">
-            <span class="mode-icon" aria-hidden="true">+</span>
+            <span class="mode-icon" aria-hidden="true"><img src="assets/logo-hapvida.png?v=20260919-4" alt=""></span>
             <span><strong>Plano de saúde</strong><small>Layout Saúde e Odonto</small></span>
           </button>
           <button class="mode-button" id="mode-caju" type="button" aria-pressed="false">
-            <span class="mode-icon caju" aria-hidden="true">C</span>
+            <span class="mode-icon caju" aria-hidden="true"><img src="assets/logo-caju.png?v=20260919-4" alt=""></span>
             <span><strong>Caju</strong><small>Cadastro de colaboradores</small></span>
           </button>
         </div>
@@ -101,14 +104,16 @@
           </div>
         </div>
 
-        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <div class="action-area">
+          <div class="status" id="status" role="status" aria-live="polite"></div>
 
-        <button class="primary-button" id="generate-button" type="button" disabled>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
-          </svg>
-          Gerar e baixar layout
-        </button>
+          <button class="primary-button" id="generate-button" type="button" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" />
+            </svg>
+            Gerar e baixar layout
+          </button>
+        </div>
 
         <div class="loading-overlay" id="loading-overlay" hidden aria-live="polite" aria-label="Carregando planilha">
           <div class="gold-loader" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -130,9 +135,9 @@
       <button class="modal-confirm" id="privacy-confirm" type="button">Entendi</button>
     </dialog>
 
-    <script src="assets/xlsx.full.min.js"></script>
-    <script src="assets/jszip.min.js"></script>
-    <script src="assets/template-data.js"></script>
-    <script src="app.js"></script>
+    <script src="assets/xlsx.full.min.js?v=20260919-3"></script>
+    <script src="assets/jszip.min.js?v=20260919-3"></script>
+    <script src="assets/template-data.js?v=20260919-3"></script>
+    <script src="app.js?v=20260919-3"></script>
   </body>
 </html>
