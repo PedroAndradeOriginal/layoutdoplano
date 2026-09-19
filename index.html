@@ -31,6 +31,16 @@
 
     <main id="inicio">
       <section class="workspace" aria-label="Gerador de layout">
+        <div class="mode-selector" aria-label="Tipo de exportação">
+          <button class="mode-button is-active" id="mode-plan" type="button" aria-pressed="true">
+            <span class="mode-icon" aria-hidden="true">+</span>
+            <span><strong>Plano de saúde</strong><small>Layout Saúde e Odonto</small></span>
+          </button>
+          <button class="mode-button" id="mode-caju" type="button" aria-pressed="false">
+            <span class="mode-icon caju" aria-hidden="true">C</span>
+            <span><strong>Caju</strong><small>Cadastro de colaboradores</small></span>
+          </button>
+        </div>
         <div class="processing-layout">
           <div class="upload-column">
             <div class="compact-label"><span class="step-number">01</span><strong>Arquivo de efetivo</strong><span class="file-type">XLSX</span></div>

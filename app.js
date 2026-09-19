@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const state = { file: null, rows: [], filtered: [], headers: new Map() };
+  const state = { file: null, rows: [], filtered: [], headers: new Map(), mode: "plan" };
   const elements = {
     input: document.querySelector("#file-input"),
     dropzone: document.querySelector("#dropzone"),
@@ -14,6 +14,7 @@
     count: document.querySelector("#result-count"),
     preview: document.querySelector("#preview"),
     previewBody: document.querySelector("#preview-body"),
+    previewHeaders: [...document.querySelectorAll("#preview thead th")],
     status: document.querySelector("#status"),
     generate: document.querySelector("#generate-button"),
     empty: document.querySelector("#empty-result"),
@@ -22,6 +23,8 @@
     privacyModal: document.querySelector("#privacy-modal"),
     privacyClose: document.querySelector("#privacy-close"),
     privacyConfirm: document.querySelector("#privacy-confirm"),
+    modePlan: document.querySelector("#mode-plan"),
+    modeCaju: document.querySelector("#mode-caju"),
   };
 
   const normalize = (value) => String(value ?? "")
@@ -106,6 +109,17 @@
     elements.status.className = `status${type ? ` is-${type}` : ""}`;
   }
 
+  function setMode(mode) {
+    state.mode = mode;
+    const plan = mode === "plan";
+    elements.modePlan.classList.toggle("is-active", plan);
+    elements.modeCaju.classList.toggle("is-active", !plan);
+    elements.modePlan.setAttribute("aria-pressed", String(plan));
+    elements.modeCaju.setAttribute("aria-pressed", String(!plan));
+    elements.generate.lastChild.textContent = plan ? " Gerar e baixar layout" : " Gerar arquivo da Caju";
+    if (state.filtered.length) updateFilteredRows();
+  }
+
   function clearFile() {
     state.file = null;
     state.rows = [];
@@ -135,14 +149,28 @@
     elements.empty.hidden = state.filtered.length > 0;
     elements.previewBody.replaceChildren();
 
+    const cajuMode = state.mode === "caju";
+    const headerLabels = cajuMode
+      ? ["Nome completo", "CPF", "E-mail", "Telefone"]
+      : ["Matrícula", "Nome", "Admissão", "Município"];
+    elements.previewHeaders.forEach((header, index) => { header.textContent = headerLabels[index]; });
+
     state.filtered.slice(0, 5).forEach((row) => {
       const tr = document.createElement("tr");
-      const values = [
-        valueFrom(row, "Matricula", "Matrícula"),
-        valueFrom(row, "Nome complet", "Nome completo"),
-        brDate(excelDateToLocal(valueFrom(row, "Data Admis.", "Data Admissão"))),
-        valueFrom(row, "Municipio", "Município"),
-      ];
+      const mobile = `${digits(valueFrom(row, "DDD Celular"))}${digits(valueFrom(row, "Num. Celular"))}`;
+      const values = cajuMode
+        ? [
+            valueFrom(row, "Nome completo", "Nome complet"),
+            digits(valueFrom(row, "CPF")),
+            valueFrom(row, "Email Princ", "Email Principal"),
+            mobile || `${digits(valueFrom(row, "DDD Telefone"))}${digits(valueFrom(row, "Telefone"))}`,
+          ]
+        : [
+            valueFrom(row, "Matricula", "Matrícula"),
+            valueFrom(row, "Nome complet", "Nome completo"),
+            brDate(excelDateToLocal(valueFrom(row, "Data Admis.", "Data Admissão"))),
+            valueFrom(row, "Municipio", "Município"),
+          ];
       values.forEach((value) => {
         const td = document.createElement("td");
         td.textContent = text(value);
@@ -153,6 +181,12 @@
 
     if (selected && state.filtered.length === 0) {
       setStatus("Não há admissões a partir da data escolhida.", "error");
+    } else if (state.mode === "caju") {
+      const missingEmail = state.filtered.filter((row) => !text(valueFrom(row, "Email Princ", "Email Principal"))).length;
+      setStatus(
+        missingEmail ? `${missingEmail} ${missingEmail === 1 ? "pessoa está" : "pessoas estão"} sem e-mail no efetivo.` : "",
+        missingEmail ? "error" : "",
+      );
     } else {
       setStatus("");
     }
@@ -175,8 +209,12 @@
       if (matrix.length < 2) throw new Error("A planilha está vazia.");
 
       state.headers = buildHeaderMap(matrix[0]);
-      const required = ["Matricula", "Nome complet", "Data Admis."];
-      const missing = required.filter((header) => findColumn(header) < 0);
+      const required = [
+        { label: "Matricula", aliases: ["Matricula", "Matrícula"] },
+        { label: "Nome completo", aliases: ["Nome complet", "Nome completo"] },
+        { label: "Data Admis.", aliases: ["Data Admis.", "Data Admissão"] },
+      ];
+      const missing = required.filter((item) => findColumn(...item.aliases) < 0).map((item) => item.label);
       if (missing.length) throw new Error(`Coluna não encontrada: ${missing.join(", ")}.`);
 
       state.file = file;
@@ -303,10 +341,59 @@
     }
   }
 
+  function csvCell(value) {
+    const string = String(value ?? "");
+    return /[;"\r\n]/.test(string) ? `"${string.replace(/"/g, '""')}"` : string;
+  }
+
+  function digits(value) {
+    return String(value ?? "").replace(/\D/g, "");
+  }
+
+  async function generateCajuCsv() {
+    if (!state.filtered.length) return;
+    try {
+      elements.loading.hidden = false;
+      const headers = ["Nome completo", "CPF", "Email", "Telefone Celular", "CEP", "Logradouro", "Numero", "Complemento", "Bairro", "Cidade", "Estado"];
+      const rows = state.filtered.map((row) => {
+        const mobile = `${digits(valueFrom(row, "DDD Celular"))}${digits(valueFrom(row, "Num. Celular"))}`;
+        const phone = mobile || `${digits(valueFrom(row, "DDD Telefone"))}${digits(valueFrom(row, "Telefone"))}`;
+        return [
+          text(valueFrom(row, "Nome completo", "Nome complet")),
+          digits(valueFrom(row, "CPF")),
+          text(valueFrom(row, "Email Princ", "Email Principal")),
+          phone,
+          "", "", "", "", "", "", "",
+        ];
+      });
+      const csv = [headers, ...rows].map((row) => row.map(csvCell).join(";")).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "colaboradores-exemplo (20).csv";
+      document.body.appendChild(link);
+      link.click();
+      const objectUrl = link.href;
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+      setStatus(`Arquivo da Caju gerado com ${state.filtered.length} registros.`, "success");
+    } catch (error) {
+      setStatus(error.message || "Não foi possível gerar o arquivo da Caju.", "error");
+    } finally {
+      elements.loading.hidden = true;
+    }
+  }
+
+  function generateOutput() {
+    return state.mode === "caju" ? generateCajuCsv() : generateWorkbook();
+  }
+
   elements.input.addEventListener("change", () => loadFile(elements.input.files[0]));
   elements.remove.addEventListener("click", clearFile);
   elements.date.addEventListener("change", updateFilteredRows);
-  elements.generate.addEventListener("click", generateWorkbook);
+  elements.generate.addEventListener("click", generateOutput);
+  elements.modePlan.addEventListener("click", () => setMode("plan"));
+  elements.modeCaju.addEventListener("click", () => setMode("caju"));
   elements.privacyButton.addEventListener("click", () => elements.privacyModal.showModal());
   elements.privacyClose.addEventListener("click", () => elements.privacyModal.close());
   elements.privacyConfirm.addEventListener("click", () => elements.privacyModal.close());
