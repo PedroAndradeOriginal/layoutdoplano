@@ -17,6 +17,8 @@ O processamento acontece integralmente no navegador. Nenhuma planilha ou informa
 - Preservação do nome obrigatório `colaboradores-exemplo (20).csv`.
 - Manutenção das colunas posteriores ao telefone em branco no arquivo da Caju.
 - Geração da planilha mensal da Caju com modelo interno, abas, fórmulas e formatação preservadas.
+- Atualização da competência em todos os pontos do arquivo mensal.
+- Reconstrução local da aba de conferência de nomes e funções com o efetivo atual.
 - Seleção da competência mensal e inclusão de quem esteve ativo em qualquer dia do mês.
 - Atualização dos dados cadastrais pelo efetivo atual.
 - Manutenção dos parâmetros de benefício do mês anterior por matrícula.

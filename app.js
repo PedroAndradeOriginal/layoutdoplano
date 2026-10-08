@@ -472,6 +472,35 @@
     return styles;
   }
 
+  async function updateEmployeeCheckSheet(zip) {
+    const sheetPath = "xl/worksheets/sheet3.xml";
+    const file = zip.file(sheetPath);
+    if (!file) return;
+    let xml = await file.async("string");
+    const rowMatches = [...xml.matchAll(/<row\b[^>]*\br="(\d+)"[^>]*>[\s\S]*?<\/row>/g)];
+    const prototype = rowMatches.find((match) => Number(match[1]) >= 2)?.[0] || rowMatches[0]?.[0] || "";
+    const styles = stylesFromTemplateRow(prototype);
+    const rows = state.filtered.map((row, index) => {
+      const rowNumber = index + 2;
+      const name = text(valueFrom(row, "Nome completo", "Nome complet"));
+      const role = text(valueFrom(row, "Desc.Funcao", "Desc. Função", "Função"));
+      const values = [
+        { value: name },
+        { value: role },
+        { value: name },
+        { value: role },
+        { formula: `IF(B${rowNumber}<>_xlfn.XLOOKUP(A${rowNumber},C:C,D:D),A${rowNumber},"")` },
+      ];
+      const cells = values.map((cell, column) => monthlyCellXml(column, rowNumber, styles.get(column), cell)).join("");
+      return `<row r="${rowNumber}" spans="1:5">${cells}</row>`;
+    }).join("");
+    const lastRow = Math.max(2, state.filtered.length + 1);
+    xml = xml.replace(/<sheetData>[\s\S]*?<\/sheetData>/, `<sheetData>${rows}</sheetData>`);
+    xml = xml.replace(/<dimension ref="[^"]+"\/>/, `<dimension ref="A1:E${lastRow}"/>`);
+    xml = xml.replace(/(<autoFilter\b[^>]*\bref=")A1:E\d+("[^>]*\/>)/, `$1A1:E${lastRow}$2`);
+    zip.file(sheetPath, xml);
+  }
+
   function benefitCells(sheet, sourceRow, targetRow) {
     const cells = [];
     for (let column = 13; column < 28; column += 1) {
@@ -535,7 +564,7 @@
       { value: excelSerial(valueFrom(row, "Data Admis.", "Data Admissão")), type: "number" },
       { value: paymentStatus(row) },
       { value: excelSerial(valueFrom(row, "Dt. Demissao", "Dt. Demissão")), type: "number" },
-      { value: text(valueFrom(row, "Desc. Depto", "Desc. Depto.", "Departamento")) },
+      { value: text(valueFrom(row, "Local Benef.", "Local Benef")) || text(valueFrom(row, "Desc. Depto", "Desc. Depto.", "Departamento")) },
       { value: text(valueFrom(row, "CPF")) },
     ];
   }
@@ -597,8 +626,15 @@
       xml = xml.replace(/([A-Z]+)8:\1\d+/g, (match, column) => `${column}8:${column}${lastRow}`);
       zip.file(sheetPath, xml);
 
+      await updateEmployeeCheckSheet(zip);
+
       const competence = competenceText(elements.date.value);
-      for (const path of ["xl/sharedStrings.xml", "xl/workbook.xml"]) {
+      const competenceTargets = [
+        "xl/sharedStrings.xml",
+        "xl/workbook.xml",
+        ...Object.keys(zip.files).filter((path) => /^xl\/worksheets\/sheet\d+\.xml$/.test(path)),
+      ];
+      for (const path of competenceTargets) {
         const file = zip.file(path);
         if (!file) continue;
         const content = await file.async("string");
