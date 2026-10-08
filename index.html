@@ -17,7 +17,7 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%237b204f'/%3E%3Cpath d='M17 16v32M17 32h20M37 16v32' stroke='white' stroke-width='7' stroke-linecap='round'/%3E%3Cpath d='M48 35v18M39 44h18' stroke='%23e6b85c' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"
     />
     <title>Exportação de Layout da Day</title>
-    <link rel="stylesheet" href="styles.css?v=20260919-5" />
+    <link rel="stylesheet" href="styles.css?v=20261008-1" />
   </head>
   <body>
     <header class="topbar">
@@ -41,7 +41,11 @@
           </button>
           <button class="mode-button" id="mode-caju" type="button" aria-pressed="false">
             <span class="mode-icon caju" aria-hidden="true"><img src="assets/logo-caju.png?v=20260919-4" alt=""></span>
-            <span><strong>Caju</strong><small>Cadastro de colaboradores</small></span>
+            <span><strong>Caju cartão</strong><small>Cadastro de colaboradores</small></span>
+          </button>
+          <button class="mode-button" id="mode-caju-payment" type="button" aria-pressed="false">
+            <span class="mode-icon caju" aria-hidden="true"><img src="assets/logo-caju.png?v=20260919-4" alt=""></span>
+            <span><strong>Caju pagamento</strong><small>Arquivo mensal de benefícios</small></span>
           </button>
         </div>
         <div class="processing-layout">
@@ -73,8 +77,8 @@
             <div class="date-panel" id="date-panel" hidden>
               <div class="field-heading">
                 <div>
-                  <span class="step-number">02</span>
-                  <label for="start-date">Admissões a partir de</label>
+                  <span class="step-number" id="date-step">02</span>
+                  <label for="start-date" id="date-label">Admissões a partir de</label>
                 </div>
                 <span class="result-count" id="result-count"></span>
               </div>
@@ -135,9 +139,10 @@
       <button class="modal-confirm" id="privacy-confirm" type="button">Entendi</button>
     </dialog>
 
-    <script src="assets/xlsx.full.min.js?v=20260919-3"></script>
-    <script src="assets/jszip.min.js?v=20260919-3"></script>
-    <script src="assets/template-data.js?v=20260919-3"></script>
-    <script src="app.js?v=20260919-3"></script>
+    <script src="assets/xlsx.full.min.js?v=20261008-1"></script>
+    <script src="assets/jszip.min.js?v=20261008-1"></script>
+    <script src="assets/template-data.js?v=20261008-1"></script>
+    <script src="assets/monthly-template-data.js?v=20261008-1"></script>
+    <script src="app.js?v=20261008-8"></script>
   </body>
 </html>
